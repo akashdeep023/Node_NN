@@ -64,3 +64,36 @@ calculateMultiple(10, 20);
 const data = require("./data.json");
 
 console.log(data);
+
+// JavaScript -> Synchronous Single Thread Language
+// JavaScript is a synchronous, single-threaded language, meaning there is only one thread in which the JavaScript engine (such as the V8 engine) runs. In JavaScript, code is executed line by line within this single thread.
+// So, if you're executing line 2 in JavaScript, it will only run after line 1 has finished executing. This is the essence of synchronous execution: each task is performed one after the other, without overlap.
+
+// Q: What is a Synchronous System?
+// In a synchronous system, tasks are completed one after another.
+// Ex -
+// let a = 343;
+// let b = 398594;
+// function multipleFn(a, b) {
+// 	const result = a * b;
+// 	return result;
+// }
+// let c = multipleFn(a, b);
+// console.log(c);
+
+// Q: What is an Asynchronous System?
+// In this system, tasks are completed independently.
+// Ex -
+// https.get("https://api.fbi.com", (res) => {
+// 	console.log(res?.secret);
+// });
+// setTimeout(() => {
+// 	console.log("setTimeout");
+// }, 5000);
+// fs.readFile("./path.txt", "utf8", (data) => {
+// 	console.log("File Data : " + data);
+// });
+
+// So, JavaScript itself is synchronous, but with the power of Node.js, it can handle asynchronous operations, allowing JavaScript to perform multiple tasks concurrently
+// libuv performs these heavy tasks in the background, ensuring that asynchronous operations continue to be managed effectively.
+// In summary, Node.js excels in handling asynchronous I/O operations, thanks to its non-blocking I/O model.
