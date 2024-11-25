@@ -97,3 +97,7 @@ console.log(data);
 // So, JavaScript itself is synchronous, but with the power of Node.js, it can handle asynchronous operations, allowing JavaScript to perform multiple tasks concurrently
 // libuv performs these heavy tasks in the background, ensuring that asynchronous operations continue to be managed effectively.
 // In summary, Node.js excels in handling asynchronous I/O operations, thanks to its non-blocking I/O model.
+
+// sync.js file
+// async.js file
+// blocking.js file
