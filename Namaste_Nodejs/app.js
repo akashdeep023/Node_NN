@@ -101,3 +101,32 @@ console.log(data);
 // sync.js file
 // async.js file
 // blocking.js file
+
+// 2 Types of Languages
+// 1. interpreted                              2. Compiled
+// Read the code line by line and execute it    First compilation of all code then execution (HL code -> LL code (Machine code))
+// Fast initial execution                       Initial heavy but executed fast
+// interpreter                                 Compilers
+// Ex - Python, Ruby, etc.                      Ex - Java, c, c++, Go, etc.
+
+// JavaScript is JIT (Just in time) compilation language.
+
+// How to execute code in v8 engine (JIT compilation) (V8 architecture)
+// A. Parsing stage
+//    1. Lexical analysis (Tokenization)
+//       - code -> token
+//    2. Syntax analysis (Parsing)
+//       - token -> AST (Abstract syntax tree)
+// B. Optimization
+//  AST (Abstract syntax tree)
+//      |                       (optimization)
+//      (Ignition interpreter)  ————————→  (Turbofan Compiler)
+//           |            |                        |
+//           |             ←———————————————————————
+//           |                (de optimization)    |
+//      (Byte code)                         (Optimised Machine code)
+//           |                                     |
+//           —————————————→(Execution)←—————————————
+//
+// Garbage collector run (Orinoco,Oilpan,Scavenger)
+// Chached
