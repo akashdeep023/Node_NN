@@ -233,3 +233,23 @@ console.log(data);
 // Buffer & Stream
 // Pipes
 // etc....
+
+// TCP - Transmission control protocol
+// IP - Internet protocol
+// HTTP  - Hyper text transfer protocol
+// FTP - File transfer protocol
+// SMTP - Simple mail transfer protocol
+// DNS - Domain name server
+
+// Socket connection between server and client
+// Server response on HTTP, FTP, SMTP and other.
+
+// Socket - User req to server(app) socket is open after res socket is close.
+// Web Socket - User req to server(app) socket is open and till open close after some time.
+
+// Data send on - Packets/Chunk (Stream & Buffer)
+
+// Can I create multiple HTTP servers. - Yes
+// How to be know that which server i requesting - PORT (4 digit number not restricted)
+
+// Express - Node.js Framework to create web server
