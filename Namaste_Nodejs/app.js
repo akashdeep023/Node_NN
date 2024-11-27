@@ -130,3 +130,48 @@ console.log(data);
 //
 // Garbage collector run (Orinoco,Oilpan,Scavenger)
 // Chached
+
+// Libuv Event Loop
+// Libuv event loop have many phases
+// Major phases have event loop
+// 1. timer - setTimeout, setInterval
+// 2. poll - fs.readFile(), https.get()
+// 3. check - setImmediate
+// 4. close - socket.close()
+
+// and several callbacks queues (timer cb, poll cb, check cb, close cb)
+
+// process.nextTick —→ promise callback —→ timer
+// —→ process.nextTick —→ promise callback —→ poll
+// —→ process.nextTick —→ promise callback —→ check
+// —→ process.nextTick —→ promise callback —→ close
+// —→ process.nextTick —→ promise callback —→ .....  in loop
+
+// v8 engine call stack is empty then run event loop callback function otherwise wait for v8 call stack is empty
+
+//         —————————————→ timer —————————————→
+//        ↑                                   |
+//        |      —→ process.nextTick() —→     |
+//        |     ↑                        |    ↓
+//      close   |                        |   poll (event loop wait if do nothing)
+//        ↑     |                        ↓    |
+//        |      ←—— promise callback ←——     |
+//        |                                   ↓
+//         ←————————————— check  ←—————————————
+
+// event loop start with process.nextTick callback function then promise callback function
+// and every phase after run inner circle callback function
+
+// phases start with timer callback function
+// event loop wait poll callback function if do nothing
+// and phase run timer —→ poll —→ check —→ close
+
+// process.nextTick callback function - execute immediately
+// promise callback function - execute immediately
+// timer callback function - depended on time
+// poll callback function - execution some time
+
+// event-loop-1.js file
+// event-loop-2.js file
+// event-loop-3.js file
+// event-loop-4.js file
