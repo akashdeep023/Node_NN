@@ -102,6 +102,28 @@ console.log(data);
 // async.js file
 // blocking.js file
 
+// Node.js architecture
+// v8 Js engine + libuv + other libraries
+// ---------------------------------------------------------------------node.js------------------------------------------------------------------
+// -------------------------- v8 js engine -------------------------------- ------------------------------ libuv --------------------------------
+//                                                                         |
+//                                     (MEMORY HEAP)                       |
+//     |           |      |⁻⁻⁻⁻⁻⁻⁻⁻⁻⁻⁻⁻⁻⁻⁻⁻⁻⁻⁻⁻⁻⁻⁻⁻⁻⁻⁻⁻⁻⁻⁻⁻⁻⁻⁻⁻⁻⁻⁻|        |         |⁻⁻⁻⁻⁻⁻⁻⁻⁻⁻⁻⁻⁻⁻⁻⁻⁻⁻⁻⁻⁻⁻⁻⁻|
+//     |           |      |  ▢ ▢ ▢ ▢ ▢ ▢ ▢ ▢ ▢ ▢ ▢ ▢ ▢ ▢  |        |         |                        |
+//     |           |      |  ▢ ▢ ▢ ▢ ▢ ▢ ▢ ▢ ▢ ▢ ▢ ▢ ▢ ▢  |        |         |      (EVENT LOOP)      |              (THREAD POOL)
+//     |           |      |  ▢ ▢ ▢ ▢ ▢ ▢ ▢ ▢ ▢ ▢ ▢ ▢ ▢ ▢  |        |         |                        |
+//     |           |      |  ▢ ▢ ▢ ▢ ▢ ▢ ▢ ▢ ▢ ▢ ▢ ▢ ▢ ▢  |        |         |________________________|
+//     |           |      |_______________________________________|        |                                               |⁻⁻⁻⁻|     |⁻⁻⁻⁻|
+//     |           |                                                       |                                               |____|     |____|
+//     |           |      |⁻⁻⁻⁻⁻⁻⁻⁻⁻⁻⁻⁻⁻⁻⁻⁻⁻⁻⁻⁻⁻⁻⁻⁻⁻⁻⁻⁻⁻⁻⁻⁻⁻⁻⁻⁻⁻⁻⁻|        |         |⁻⁻⁻⁻⁻⁻⁻⁻⁻⁻⁻⁻⁻⁻⁻⁻⁻⁻⁻⁻⁻⁻⁻⁻
+//     |___________|      |           GARBAGE                     |        |         |________________________             |⁻⁻⁻⁻|     |⁻⁻⁻⁻|
+//     |main thread|      |           COLLECTOR                   |        |         |                                     |____|     |____|
+//     |___________|      |_______________________________________|        |         |⁻⁻⁻⁻⁻⁻⁻⁻⁻⁻⁻⁻⁻⁻⁻⁻⁻⁻⁻⁻⁻⁻⁻⁻
+//                                                                         |         |________________________         (DEFAULT THREADPOOL SIZE = 4)
+//     (CALL STACK)                                                        |            (CALLBACK QUEUES)
+//
+// ----------------------------------------------------------------------------------------------------------------------------------------------
+//
 // 2 Types of Languages
 // 1. interpreted                              2. Compiled
 // Read the code line by line and execute it    First compilation of all code then execution (HL code -> LL code (Machine code))
@@ -119,14 +141,14 @@ console.log(data);
 //       - token -> AST (Abstract syntax tree)
 // B. Optimization
 //  AST (Abstract syntax tree)
-//      |                       (optimization)
+//      ↓                       (optimization)
 //      (Ignition interpreter)  ————————→  (Turbofan Compiler)
-//           |            |                        |
+//           |            ↑                        ↓
 //           |             ←———————————————————————
-//           |                (de optimization)    |
+//           ↓                (de optimization)    ↓
 //      (Byte code)                         (Optimised Machine code)
-//           |                                     |
-//           —————————————→(Execution)←—————————————
+//           ↓                                     ↓
+//           ————————————→ (Execution) ←————————————
 //
 // Garbage collector run (Orinoco,Oilpan,Scavenger)
 // Chached
@@ -171,7 +193,43 @@ console.log(data);
 // timer callback function - depended on time
 // poll callback function - execution some time
 
+// One full cicle is known as TICK
+
 // event-loop-1.js file
 // event-loop-2.js file
 // event-loop-3.js file
 // event-loop-4.js file
+
+// Liveuv Thread pool
+// uv-thread-pool default size = 4
+// How to change thread-pool size - process.env.THREADPOOL_SIZE = 8 (Any integer number)
+
+// Thread-pool work - fs, dns.lookup, crypto, etc.
+
+// Is Node.js single threaded or multi-threaded?
+// Ans: Depending on how you are using node.js, What code is running on node.js
+// synchronous code —→ single-threaded node.js
+// asynchronous code —→ multi-threaded node.js
+
+// thread-pool.js file
+
+// How to connect thread-pool to OS (Operating system)
+// epool (linux), kqueue (macos), other kernel
+// Scalable I/O event notification mechanism
+
+// File descriptor/ Socket descriptor
+
+// DON'T BLOCK THE MAIN THREAD
+// DON'T USE - (sync method, heavy json object, complex Regex, complex calculations/loop, etc.)
+
+// DATA STRUCTURE IS IMPORTANT
+// epool use - red black tree
+// timer - min heap
+
+// NAMING IS VERY IMPORTANT
+
+// THERE'S A LOT TO LEARN
+// Event emitter
+// Buffer & Stream
+// Pipes
+// etc....
