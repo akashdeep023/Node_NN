@@ -291,3 +291,6 @@ console.log(data);
 // Relationship - foreign key, joins       |        Nested (Relationships)
 // Read-heavy apps, Transactions workloads |        Real time, Big data, Distributed computing
 // Ex- Banking apps                        |        Ex- Real time applications, Social media
+
+// Creating a database mongoDB
+// database.js file
