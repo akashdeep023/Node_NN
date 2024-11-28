@@ -253,3 +253,41 @@ console.log(data);
 // How to be know that which server i requesting - PORT (4 digit number not restricted)
 
 // Express - Node.js Framework to create web server
+
+// Database - Database is an organized collection of data or a type of data store based on the use of a DBMS
+// DBMS (Database management system) - The software that interact with end users, applications, and the database itself to capture and analyze the data.
+
+// Types of Databases
+// 1. Relational DB - MySQL, PostgreSQL
+// 2. NoSQL DB - MongoDB
+// 3. In memory DB - Redis
+// 4. Distributed SQL DB - Cockroach DB
+// 5. Time series DB - Influx DB
+// 6. Object Oriented DB - db4o
+// 7. Graph DB - Neo4j
+// 8. Hierarchical DB - IBM IMS
+// 9. Network DB - IOMS
+// 10. Cloud DB - Amazon RDS
+// So many types of databases...
+
+// SQL - Structured Query Language
+// Relational DBMS (MYSQL, POstgreSQL)
+// EF Codd - Codd's 12 Rules (0 to 12) in Relational DBMS
+// Michael Widenius - MYSQL
+// Michael Stonebreaker - PostgreSQL
+
+// NoSQL - Not Only Structured Query Language
+// NOSQL (MongoDB)
+// NOSQL DB Types -
+// Document DB, Key Value DB, Graph DB, Wide column DB, Multi Model
+// MongoDB - Document DB
+
+// RDBMS (MYSQL)                                    NoSQL (MongoDB)
+// Table, Rows, Columns                    |        Collection, Document, Field
+// Structured Data                         |        Unstructured Data
+// Fixed Schema                            |        Flexible Schema
+// SQL (Structure query language)          |        Mongo(MQL), Neo4j(Cypher)
+// Tough horizontal scaling                |        Easy to scales horizontally + vertical
+// Relationship - foreign key, joins       |        Nested (Relationships)
+// Read-heavy apps, Transactions workloads |        Real time, Big data, Distributed computing
+// Ex- Banking apps                        |        Ex- Real time applications, Social media
