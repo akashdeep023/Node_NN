@@ -1,0 +1,19 @@
+{
+	"name": "devtinder_api",
+	"version": "1.0.0",
+	"description": "DevTinder for developers",
+	"main": "index.js",
+	"scripts": {
+		"start": "node src/app.js",
+		"dev": "nodemon src/app.js"
+	},
+	"keywords": [
+		"nodejs",
+		"javascript"
+	],
+	"author": "Akash Deep",
+	"license": "ISC",
+	"dependencies": {
+		"express": "^4.21.1"
+	}
+}
