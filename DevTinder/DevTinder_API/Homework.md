@@ -1,3 +1,5 @@
+# **Class Notes & Home Work**
+
 -   Create a repository (Project)
     -   Creating DevTinder_API
 -   Initialize the repository
@@ -69,4 +71,38 @@
 
     ```bash
     ctrl + C
+    ```
+
+-   Order of the routes matters a lot.
+    -   Browser - `/` route, Responce - `Hello from the server`
+    -   Browser - `/hello` route, Responce - `Hello from the server`
+    -   Browser - `/test` route, Responce - `Hello from the server`
+    -   Browser - `/xyz` route, Responce - `Hello from the server`
+    -   _`/`, `/hello`, `/test` & `/xyz` routes match with 1st `/` route handler_
+    ```js
+    app.use("/", (req, res) => {
+    	res.send("Hello from the server");
+    });
+    app.use("/hello", (req, res) => {
+    	res.send("Hello from the hello route");
+    });
+    app.use("/test", (req, res) => {
+    	res.send("Hello from the test route");
+    });
+    ```
+    -   Browser - `/` route, Responce - `Hello from the server`
+    -   Browser - `/hello` route, Responce - `Hello from the hello route`
+    -   Browser - `/test` route, Responce - `Hello from the test route`
+    -   Browser - `/xyz` route, Responce - `Hello from the server`
+    -   _`/`, `/hello` & `/test` routes match with own route handler and `/xyz` route match with `/` route handler_
+    ```js
+    app.use("/hello", (req, res) => {
+    	res.send("Hello from the hello route");
+    });
+    app.use("/test", (req, res) => {
+    	res.send("Hello from the test route");
+    });
+    app.use("/", (req, res) => {
+    	res.send("Hello from the server");
+    });
     ```
