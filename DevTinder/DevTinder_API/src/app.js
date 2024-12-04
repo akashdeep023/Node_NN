@@ -1,27 +1,68 @@
 const express = require("express");
 const app = express();
 
-// This will match all the HTTP methods API methods to /user
-// app.use("/user", (req, res) => {
-// 	res.send("Hello from the user!");
+// Explore Advance routing
+// app.get("/abc", (req, res) => {
+// 	res.send("Hello world!");
 // });
 
-// This will only handle GET to /user
-app.get("/user", (req, res) => {
-	res.send({ firstName: "Akash", lastName: "Deep" });
-});
-// This will only handle POST to /user
-app.post("/user", (req, res) => {
-	res.send("User data successfully saved to the database");
-});
-// This will only handle DELETE to /user
-app.delete("/user", (req, res) => {
-	res.send("Deleted successfully");
+// ab?c -> abc, ab
+// app.get("/ab?c", (req, res) => {
+// 	res.send("Hello world!");
+// });
+
+// a(bc)?d -> abcd, ad
+// app.get("/a(bc)?d", (req, res) => {
+// 	res.send("Hello world!");
+// });
+
+// ab+c -> abc, abbc, abbbc, abbbbc, etc.
+// app.get("/ab+c", (req, res) => {
+// 	res.send("Hello world!");
+// });
+
+// a(bc)+d -> abcd, abcbcd, abcbcbcd, etc.
+// app.get("/a(bc)+d", (req, res) => {
+// 	res.send("Hello world!");
+// });
+
+// ab*c -> abc, abxc, abxyzc, abanythingc, etc.
+// app.get("/ab*c", (req, res) => {
+// 	res.send("Hello world!");
+// });
+
+// Use regex in routing
+// anywhere "a" exist in routing - handle
+// Ex:- apple, a, man, leader, etc.
+// app.get(/a/, (req, res) => {
+// 	res.send("Hello world!");
+// });
+
+// end of "fly" in routing - handle
+// Ex:- fly, dragonfly, butterfly, afly,etc.
+app.get(/.*fly$/, (req, res) => {
+	res.send("Hello world!");
 });
 
-// This will match all the HTTP methods API calls to /test
-app.use("/test", (req, res) => {
-	res.send("Hello from the test route");
+// query
+// Ex:- http://localhost:7777/user?name=akash
+app.get("/user", (req, res) => {
+	console.log(req.query); // { name: 'akash' }
+	res.send("Hello world!");
+});
+
+// params
+// Ex:- http://localhost:7777/user/101
+app.get("/user/:userId", (req, res) => {
+	console.log(req.params); // { userId: '101' }
+	res.send("Hello world!");
+});
+
+// dynamic routes
+// Ex:- http://localhost:7777/user/101/akash
+app.get("/user/:id/:name", (req, res) => {
+	console.log(req.params); // { id: '101', name: 'akash' }
+	res.send("Hello world!");
 });
 
 app.listen(7777, () => {

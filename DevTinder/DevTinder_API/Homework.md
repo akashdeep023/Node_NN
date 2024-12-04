@@ -74,11 +74,13 @@
     ```
 
 -   Order of the routes matters a lot.
+
     -   Browser - `/` route, Responce - `Hello from the server`
     -   Browser - `/hello` route, Responce - `Hello from the server`
     -   Browser - `/test` route, Responce - `Hello from the server`
     -   Browser - `/xyz` route, Responce - `Hello from the server`
     -   _`/`, `/hello`, `/test` & `/xyz` routes match with 1st `/` route handler_
+
     ```js
     app.use("/", (req, res) => {
     	res.send("Hello from the server");
@@ -90,11 +92,13 @@
     	res.send("Hello from the test route");
     });
     ```
+
     -   Browser - `/` route, Responce - `Hello from the server`
     -   Browser - `/hello` route, Responce - `Hello from the hello route`
     -   Browser - `/test` route, Responce - `Hello from the test route`
     -   Browser - `/xyz` route, Responce - `Hello from the server`
     -   _`/`, `/hello` & `/test` routes match with own route handler and `/xyz` route match with `/` route handler_
+
     ```js
     app.use("/hello", (req, res) => {
     	res.send("Hello from the hello route");
@@ -104,5 +108,103 @@
     });
     app.use("/", (req, res) => {
     	res.send("Hello from the server");
+    });
+    ```
+
+-   Write logic to handle GET, POST, PATCH, DELETE APIs calls and test them on POstman
+    ```js
+    // This will only handle GET to /user
+    app.get("/user", (req, res) => {
+    	res.send({ firstName: "Akash", lastName: "Deep" });
+    });
+    // This will only handle POST to /user
+    app.post("/user", (req, res) => {
+    	res.send("User data successfully saved to the database");
+    });
+    // This will only handle PATCH to /user
+    app.patch("/user", (req, res) => {
+    	res.send("Updated successfully");
+    });
+    // This will only handle DELETE to /user
+    app.delete("/user", (req, res) => {
+    	res.send("Deleted successfully");
+    });
+    ```
+-   Explore routing and use of `?`, `+` , `()`, `*` in the routes
+
+    ```js
+    // Explore Advance routing
+    // ? before letter -> exist ya not exist
+    // ab?c -> abc, ab
+    app.get("/ab?c", (req, res) => {
+    	res.send("Hello world!");
+    });
+
+    // ? before (string) -> exist ya not exist
+    // a(bc)?d -> abcd, ad
+    app.get("/a(bc)?d", (req, res) => {
+    	res.send("Hello world!");
+    });
+
+    // + before latter -> one time ya many times
+    // ab+c -> abc, abbc, abbbc, abbbbc, etc.
+    app.get("/ab+c", (req, res) => {
+    	res.send("Hello world!");
+    });
+
+    // + before (string) -> string one time ya many times
+    // a(bc)+d -> abcd, abcbcd, abcbcbcd, etc.
+    app.get("/a(bc)+d", (req, res) => {
+    	res.send("Hello world!");
+    });
+
+    // * -> replace "*" to any other string
+    // ab*c -> abc, abxc, abxyzc, abanythingc, etc.
+    app.get("/ab*c", (req, res) => {
+    	res.send("Hello world!");
+    });
+    ```
+
+-   Use of regex in routes `/a/` , `/.*fly$/`
+
+    ```js
+    // anywhere "a" exist in routing - handle
+    // Ex:- apple, a, man, leader, etc.
+    app.get(/a/, (req, res) => {
+    	res.send("Hello world!");
+    });
+
+    // end of "fly" in routing - handle
+    // Ex:- fly, dragonfly, butterfly, afly,etc.
+    app.get(/.*fly$/, (req, res) => {
+    	res.send("Hello world!");
+    });
+    ```
+
+-   Reading the query, params in the routes
+
+    ```js
+    // query
+    // Ex:- http://localhost:7777/user?name=akash
+    app.get("/user", (req, res) => {
+    	console.log(req.query); // { name: 'akash' }
+    	res.send("Hello world!");
+    });
+
+    // params
+    // Ex:- http://localhost:7777/user/101
+    app.get("/user/:userId", (req, res) => {
+    	console.log(req.params); // { userId: '101' }
+    	res.send("Hello world!");
+    });
+    ```
+
+-   Reading the dynamic routes
+    ```js
+    // dynamic routes
+    // Ex:- http://localhost:7777/user/101/akash
+    app.get("/user/:id/:name", (req, res) => {
+    	console.log(req.params); // { id: '101', name: 'akash' }
+    	res.send("Hello world!");
     });
     ```
