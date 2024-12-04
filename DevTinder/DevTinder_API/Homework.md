@@ -200,6 +200,7 @@
     ```
 
 -   Reading the dynamic routes
+
     ```js
     // dynamic routes
     // Ex:- http://localhost:7777/user/101/akash
@@ -207,4 +208,54 @@
     	console.log(req.params); // { id: '101', name: 'akash' }
     	res.send("Hello world!");
     });
+    ```
+
+-   Use next() function
+    -   Use `next()` function to call next route handler
+-   next() function and errors along with res.send()
+
+    -   When the `next()` function is used before or after the `res.send()` function -> got a error
+
+-   Multiple Route Handlers - Play with the code
+    ```js
+    // Multiple routes handlers
+    app.use(
+    	"/user",
+    	(req, res, next) => {
+    		console.log("Handling the route user!");
+    		// next();
+    		// res.send("Response!");
+    		next();
+    	},
+    	(req, res, next) => {
+    		console.log("Handling the route user 2!");
+    		// res.send("2nd Response!");
+    		next();
+    	},
+    	(req, res, next) => {
+    		console.log("Handling the route user 3!");
+    		// res.send("3nd Response!");
+    		next();
+    	},
+    	(req, res, next) => {
+    		console.log("Handling the route user 4!");
+    		// res.send("4nd Response!");
+    		next();
+    	},
+    	(req, res, next) => {
+    		console.log("Handling the route user 5!");
+    		res.send("5nd Response!");
+    	}
+    );
+    ```
+-   app.use("/route", rH, [rH2, rH3], rH4, rh5);
+
+    ```js
+    // Same behaviour - route-handler rapping in tha array
+    // rH, rH2, rH3, rH4, rH5 -> route-handler
+    app.use("/route", [rH, rH2, rH3, rH4, rh5]);
+    // ya
+    app.use("/route", rH, [rH2, rH3], rH4, rh5);
+    // ya
+    app.use("/route", [rH, rH2, rH3], rH4, rh5);
     ```
