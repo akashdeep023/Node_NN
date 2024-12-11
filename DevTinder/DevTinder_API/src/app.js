@@ -1,41 +1,60 @@
 const express = require("express");
 const app = express();
 
-// Single route handler
-// app.use("/user", (req, res) => {
-// 	console.log("Handling the route user!");
-// 	res.send("Response!");
-// });
-
-// Multiple routes handlers
-app.use(
-	"/user",
-	(req, res, next) => {
-		console.log("Handling the route user!");
-		// next();
-		// res.send("Response!");
+// Admin Middleware
+app.use("/admin", (req, res, next) => {
+	const token = "xyz";
+	const isAdminAuth = token === "xyz";
+	if (!isAdminAuth) {
+		res.status(401).send("unauthorized");
+	} else {
 		next();
-	},
-	(req, res, next) => {
-		console.log("Handling the route user 2!");
-		// res.send("2nd Response!");
-		next();
-	},
-	(req, res, next) => {
-		console.log("Handling the route user 3!");
-		// res.send("3nd Response!");
-		next();
-	},
-	(req, res, next) => {
-		console.log("Handling the route user 4!");
-		// res.send("4nd Response!");
-		next();
-	},
-	(req, res, next) => {
-		console.log("Handling the route user 5!");
-		res.send("5nd Response!");
 	}
-);
+});
+
+// User Middleware
+const userAuth = (req, res, next) => {
+	const token = "xyz";
+	const isUserAuth = token === "xyz";
+	if (!isUserAuth) {
+		res.status(401).send("unauthorized");
+	} else {
+		next();
+	}
+};
+
+app.get("/admin/allData", (req, res) => {
+	res.send("All data sent!");
+});
+app.get("/admin/delete", (req, res) => {
+	res.send("Deleted!");
+});
+
+// userAuth - middleware
+app.get("/user/data", userAuth, (req, res) => {
+	res.send("Data sent!");
+});
+app.get("/user/login", (req, res) => {
+	res.send("Login!");
+});
+
+// Parameters in the request headers
+// 2 parameters -> request, response
+// 3 parameters -> request, response, next
+// 4 parameters -> error, request, response, next
+
+app.get("/dashboard", (req, res) => {
+	console.log("/dashboard route");
+	throw new Error("dashboard route not available");
+});
+
+// Error handling
+// using middleware or try catch block
+app.use("/", (err, req, res, next) => {
+	if (err) {
+		res.status(500).send("Something went wrong");
+	}
+});
 
 app.listen(7777, () => {
 	console.log("Server is successfully listening on 7777 port...");
