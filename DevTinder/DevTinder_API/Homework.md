@@ -259,3 +259,84 @@
     // ya
     app.use("/route", [rH, rH2, rH3], rH4, rh5);
     ```
+
+-   What is a Middleware? Why do we need it?
+
+    -   In Node.js, middleware is a function that acts as an intermediary between software layers, processing requests and responses
+    -   The main purpose of the middleware is to modify the req and res objects, and then compile and execute any code that is required.
+
+-   Difference `app.use` and `app.all`
+
+    -   `app.use()` will match any URL that starts with the path.
+    -   `app.all()` will only match a URL path that is exactly equal to the specified path
+
+    ```js
+    app.all("/test", fn1); // route 1
+    app.use("/test", fn2); // route 2
+    // http://yourhost.com/test - both route1 and route2 will match
+    // http://yourhost.com/test/1 - only route2 will match
+    ```
+
+-   Write a dummy auth middleware for admin
+
+    ```js
+    // Admin Middleware
+    app.use("/admin", (req, res, next) => {
+    	const token = "xyz";
+    	const isAdminAuth = token === "xyz";
+    	if (!isAdminAuth) {
+    		res.status(401).send("unauthorized");
+    	} else {
+    		next();
+    	}
+    });
+
+    // Admin routes
+    app.get("/admin/allData", (req, res) => {
+    	res.send("All data sent!");
+    });
+    app.get("/admin/delete", (req, res) => {
+    	res.send("Deleted!");
+    });
+    ```
+
+-   Write a dummy auth middleware for all user routes, except /user/login
+
+    ```js
+    // User Middleware
+    const userAuth = (req, res, next) => {
+    	const token = "xyz";
+    	const isUserAuth = token === "xyz";
+    	if (!isUserAuth) {
+    		res.status(401).send("unauthorized");
+    	} else {
+    		next();
+    	}
+    };
+
+    // User routes
+    app.get("/user/data", userAuth, (req, res) => {
+    	res.send("Data sent!");
+    });
+    app.get("/user/login", (req, res) => {
+    	res.send("Login!");
+    });
+    ```
+
+-   Error Handling using `app.use("/", (err, req, res, next) = {});`
+
+    ```js
+    // Error handling
+    // using middleware or try catch block
+    app.use("/", (err, req, res, next) => {
+    	if (err) {
+    		res.status(500).send("Something went wrong");
+    	}
+    });
+    ```
+
+-   Parameters in the request headers
+
+    `2 parameters` -> `req`, `res` \
+    `3 parameters` -> `req`, `res`, `next` \
+    `4 parameters` -> `err`, `req`, `res`, `next`
