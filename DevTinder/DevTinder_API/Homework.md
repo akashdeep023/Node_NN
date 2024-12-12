@@ -340,3 +340,101 @@
     `2 parameters` -> `req`, `res` \
     `3 parameters` -> `req`, `res`, `next` \
     `4 parameters` -> `err`, `req`, `res`, `next`
+
+-   Create a free cluster on MongoDB official website (Mongo Atlas)
+
+    -   https://mongodb.org ------------------------------
+
+-   Install mongoose library
+
+    ```bash
+    npm i mongoose
+    ```
+
+-   Connect your application to the Database "Connection-url"/devTinder
+
+    ```js
+    const mongoose = require("mongoose");
+
+    const connectDB = async () => {
+    	await mongoose.connect("mongodb://localhost:27017/devTinder");
+    };
+
+    module.exports = connectDB;
+    ```
+
+-   Call the connectDB function and connect to database before starting application on 7777
+
+    ```js
+    connectDB()
+    	.then(() => {
+    		console.log("Database connection established...");
+    		app.listen(7777, () => {
+    			console.log("Server is successfully listening on 7777 port...");
+    		});
+    	})
+    	.catch((err) => {
+    		console.error(err);
+    	});
+    ```
+
+-   Create a userSchema & userModel
+
+    ```js
+    const mongoose = require("mongoose");
+
+    // Create a new User Schema
+    const userSchema = new mongoose.Schema({
+    	firstName: {
+    		type: String,
+    	},
+    	lastName: {
+    		type: String,
+    	},
+    	emailId: {
+    		type: String,
+    	},
+    	password: {
+    		type: String,
+    	},
+    	age: {
+    		type: Number,
+    	},
+    	gender: {
+    		type: String,
+    	},
+    });
+
+    // Create a User Model
+    // const User = mongoose.model("User", userSchema);
+    // module.exports = User;
+
+    module.exports = mongoose.model("User", userSchema);
+    ```
+
+-   create `POST` `/signup` API to add data to database
+
+    ```js
+    const User = require("./models/user");
+    // signup
+    app.post("/signup", async (req, res) => {
+    	// create a new user (instance) of the User model
+    	const user = new User({
+    		firstName: "Akash",
+    		lastName: "Kumar",
+    		emailId: "ak@gmail.com",
+    		password: "Akash@123",
+    	});
+    	try {
+    		// save the user to the database
+    		await user.save();
+    		// return a success response
+    		res.send("User created successfully");
+    	} catch (err) {
+    		// return an error response if the save operation fails
+    		res.status(500).send(
+    			"Server error while creating user : " + err.message
+    		);
+    	}
+    });
+    ```
