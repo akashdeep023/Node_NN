@@ -74,6 +74,37 @@ app.get("/feed", async (req, res) => {
 	}
 });
 
+// Delete a user
+app.delete("/user", async (req, res) => {
+	const userId = req.body.userId;
+	try {
+		// await User.findByIdAndDelete({ _id: userId });
+		await User.findByIdAndDelete(userId); // samething as above line
+		res.send("User deleted successfully");
+	} catch (err) {
+		console.log(err.message);
+		res.status(500).send("Server error while retrieving users.");
+	}
+});
+
+// Update a user
+app.patch("/user", async (req, res) => {
+	const userId = req.body.userId;
+	const data = req.body;
+	try {
+		// const user = await User.findByIdAndUpdate(userId, data);
+		// 3rd parameter is optional
+		const user = await User.findByIdAndUpdate(userId, data, {
+			returnDocument: "after", // use before , after
+		});
+		console.log(user);
+		res.send("User updated successfully");
+	} catch (err) {
+		console.log(err.message);
+		res.status(500).send("Server error while retrieving users.");
+	}
+});
+
 connectDB()
 	.then(() => {
 		console.log("Database connection established...");
