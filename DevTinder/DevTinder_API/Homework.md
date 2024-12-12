@@ -343,7 +343,7 @@
 
 -   Create a free cluster on MongoDB official website (Mongo Atlas)
 
-    -   https://mongodb.org ------------------------------
+    -   [MongoDB Atlas](https://www.mongodb.com/cloud/atlas/register)
 
 -   Install mongoose library
 
@@ -438,3 +438,159 @@
     	}
     });
     ```
+
+-   Difference between `JS object` vs `JSON`
+
+    -   **Javascript Objects** : _The syntax is more lenient, allowing unquoted property names, comments, and trailing commas. they can also contain symbols as keys and support methods._
+    -   **JSON** : _JSON follows a stricter syntax, requiring double-quoted property names, disallowing trailing commas, and excluding comments._
+
+-   Add the `express.json` middleware to your app
+
+    ```js
+    // middleware to parse JSON request bodies
+    app.use(express.json());
+    ```
+
+-   Make your signup API dynamic to recive data from the end user
+
+    ```js
+    // signup dynamically
+    app.post("/signup", async (req, res) => {
+    	console.log(req.body);
+    	// create a new user (instance) of the User model
+    	const user = new User(req.body);
+    	try {
+    		// save the user to the database
+    		await user.save();
+    		// return a success response
+    		res.send("User created successfully");
+    	} catch (err) {
+    		// return an error response if the save operation fails
+    		res.status(500).send(
+    			"Server error while creating user : " + err.message
+    		);
+    	}
+    });
+    ```
+
+-   User.findOne with duplucate email ids, which object returned
+
+    ```js
+    // get filter users in the database
+    app.get("/user", async (req, res) => {
+    	try {
+    		// single user found by emailId - findOne({ emailId: email})
+    		const user = await User.findOne({ emailId: req.body.emailId });
+    		if (!user) {
+    			res.status(404).send("User not found.");
+    		} else {
+    			res.send(user);
+    		}
+    	} catch (err) {
+    		console.log(err.message);
+    		res.status(500).send("Server error while retrieving users.");
+    	}
+    });
+    ```
+
+-   API - Get user by email
+
+    ```js
+    // get filter users in the database
+    app.get("/user", async (req, res) => {
+    	try {
+    		// array of users found by emailId - find({ emailId: email})
+    		const users = await User.find({ emailId: req.body.emailId });
+    		if (users.length > 0) {
+    			res.send(users);
+    		} else {
+    			res.status(404).send("No users found.");
+    		}
+    	} catch (err) {
+    		console.log(err.message);
+    		res.status(500).send("Server error while retrieving users.");
+    	}
+    });
+    ```
+
+-   API - Feed API - GET /feed - get all the users from the database
+
+    ```js
+    // get all users in the database - array of users
+    app.get("/feed", async (req, res) => {
+    	try {
+    		const users = await User.find({});
+    		res.send(users);
+    	} catch (err) {
+    		console.log(err.message);
+    		res.status(500).send("Server error while retrieving users.");
+    	}
+    });
+    ```
+
+-   API - Get user by ID
+
+    ```js
+    // get user in the database by id - user object
+    app.get("/user/:id", async (req, res) => {
+    	try {
+    		const user = await User.findById(req.params.id);
+    		if (!user) {
+    			res.status(404).send("No users found.");
+    		} else {
+    			res.send(user);
+    		}
+    	} catch (err) {
+    		console.log(err.message);
+    		res.status(500).send("Server error while retrieving users.");
+    	}
+    });
+    ```
+
+-   API - Delete a user
+
+    ```js
+    // Delete a user
+    app.delete("/user", async (req, res) => {
+    	const userId = req.body.userId;
+    	try {
+    		// await User.findByIdAndDelete({ _id: userId });
+    		await User.findByIdAndDelete(userId); // samething as above line
+    		res.send("User deleted successfully");
+    	} catch (err) {
+    		console.log(err.message);
+    		res.status(500).send("Server error while retrieving users.");
+    	}
+    });
+    ```
+
+-   Difference between PATCH and PUT
+
+    -   **PATCH** : _A PATCH request is used to **partially** update a resource. This means you only need to send the data that you want to change, without affecting the rest of the resource._
+    -   **PUT** : _A PUT request is used to update an **entire** resource on the server. When you use a PUT request, you are telling the server to completely replace the existing data with the new data you provide._
+
+-   API - Update a user
+
+    ```js
+    // Update a user
+    app.patch("/user", async (req, res) => {
+    	const userId = req.body.userId;
+    	const data = req.body;
+    	try {
+    		// const user = await User.findByIdAndUpdate(userId, data);
+    		// 3rd parameter is optional
+    		const user = await User.findByIdAndUpdate(userId, data, {
+    			returnDocument: "after", // use before , after
+    		});
+    		console.log(user);
+    		res.send("User updated successfully");
+    	} catch (err) {
+    		console.log(err.message);
+    		res.status(500).send("Server error while retrieving users.");
+    	}
+    });
+    ```
+
+-   Explore the Mongoose Documention for Model methods
+
+    -   [Mongoose Model Docs](https://mongoosejs.com/docs/api/model)
