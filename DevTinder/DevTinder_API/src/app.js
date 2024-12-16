@@ -2,25 +2,36 @@ const express = require("express");
 const connectDB = require("./config/database");
 const User = require("./models/user");
 const app = express();
+const bcrypt = require("bcrypt");
+const { validateSignupData } = require("./utlis/validate");
 
 // middleware to parse JSON request bodies
 app.use(express.json());
 
 // signup dynamically
 app.post("/signup", async (req, res) => {
-	console.log(req.body);
-	// create a new user (instance) of the User model
-	const user = new User(req.body);
+	const { firstName, lastName, emailId, password } = req.body;
 	try {
+		// validate input data
+		validateSignupData(req);
+
+		// encrypt password
+		const hashedPassword = await bcrypt.hash(password, 10);
+
+		// create a new user (instance) of the User model
+		const user = new User({
+			firstName,
+			lastName,
+			emailId,
+			password: hashedPassword,
+		});
 		// save the user to the database
 		await user.save();
 		// return a success response
 		res.send("User created successfully");
 	} catch (err) {
 		// return an error response if the save operation fails
-		res.status(500).send(
-			"Server error while creating user : " + err.message
-		);
+		res.status(500).send("ERROR : " + err.message);
 	}
 });
 
@@ -101,7 +112,7 @@ app.patch("/user/:userId", async (req, res) => {
 		if (!isAllowField) {
 			throw new Error("Invalid field value for user");
 		}
-		if (!data?.skills.length > 10) {
+		if (!data?.skills?.length > 10) {
 			throw new Error("Skills cannot be more than 10");
 		}
 		// const user = await User.findByIdAndUpdate(userId, data);
@@ -113,8 +124,7 @@ app.patch("/user/:userId", async (req, res) => {
 		console.log(user);
 		res.send("User updated successfully");
 	} catch (err) {
-		console.log(err.message);
-		res.status(500).send("Server error while retrieving users.");
+		res.status(500).send("ERROR : " + err.message);
 	}
 });
 
