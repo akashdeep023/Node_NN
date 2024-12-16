@@ -594,3 +594,198 @@
 -   Explore the Mongoose Documention for Model methods
 
     -   [Mongoose Model Docs](https://mongoosejs.com/docs/api/model)
+
+-   Explore schematype options from the documention
+
+    -   [Mongoose SchemaTypes Docs](https://mongoosejs.com/docs/schematypes.html)
+
+-   Add `required`, `unique`, `lowercase`, `min`, `minLength`, `trim`, `default` value, other options.
+
+    -   Improve the DB schema - PUT all appropiate validations on each field in Schema
+
+    ```js
+    const userSchema = new mongoose.Schema({
+    	firstName: {
+    		type: String,
+    		required: true,
+    		minLength: 3,
+    		maxLength: 50,
+    		trim: true,
+    	},
+    	lastName: {
+    		type: String,
+    		minLength: 3,
+    		maxLength: 50,
+    		trim: true,
+    	},
+    	emailId: {
+    		type: String,
+    		required: true,
+    		unique: true,
+    		lowercase: true,
+    		trim: true,
+    	},
+    	password: {
+    		type: String,
+    		required: true,
+    	},
+    	age: {
+    		type: Number,
+    		min: 18,
+    	},
+    	gender: {
+    		type: String,
+    	},
+    	about: {
+    		type: String,
+    		default: "This is a about of the user!",
+    		trim: true,
+    		maxLength: 500,
+    	},
+    	skills: {
+    		type: [String],
+    	},
+    });
+    ```
+
+-   Create a custom `validate` function for gender
+
+    -   new document - validate function run always
+    -   Update document (findByIdAndUpdate()) - runValidators if true, run validate function else not
+
+    ```js
+    // User Schema field
+    gender: {
+                type: String,
+                validate(value) {
+                    if (!["male", "female", "other"].includes(value)) {
+                        throw new Error(
+                            "Invalid gender. Choose from male, female, or other."
+                        );
+                    }
+                },
+            },
+    ```
+
+    ```js
+    // model.findByIdAndUpdate()
+    const user = await User.findByIdAndUpdate(userId, data, {
+    	returnDocument: "after", // use before , after
+    	runValidators: true, // run validator function
+    });
+    ```
+
+-   Add `timestamps` to the userSchema
+
+    ```js
+    const userSchema = new mongoose.Schema(
+    	{
+    		// Schema fields
+    	},
+    	{
+    		timestamps: true,
+    	}
+    );
+    ```
+
+-   DATA Sanitizing - Add API level validation on Patch request api
+
+    ```js
+    // Update a user
+    app.patch("/user/:userId", async (req, res) => {
+    	const userId = req.params?.userId;
+    	const data = req.body;
+    	try {
+    		// Validate fields
+    		const ALLOWED_FIELDS = [
+    			"age",
+    			"gender",
+    			"about",
+    			"skills",
+    			"photoUrl",
+    		];
+    		const isAllowField = Object.keys(data).every((key) =>
+    			ALLOWED_FIELDS.includes(key)
+    		);
+    		if (!isAllowField) {
+    			throw new Error("Invalid field value for user");
+    		}
+    		if (!data?.skills.length > 10) {
+    			throw new Error("Skills cannot be more than 10");
+    		}
+    		const user = await User.findByIdAndUpdate(userId, data, {
+    			returnDocument: "after",
+    			runValidators: true,
+    		});
+    		console.log(user);
+    		res.send("User updated successfully");
+    	} catch (err) {
+    		console.log(err.message);
+    		res.status(500).send("Server error while retrieving users.");
+    	}
+    });
+    ```
+
+-   Install validator
+
+    ```bash
+    npm install validator
+    ```
+
+-   Explore validator library funcation and Use vlidator funcs for password, emailId, photoUrl
+
+    -   [Validator](https://npmjs.com/package/validator)
+
+    ```js
+    const mongoose = require("mongoose");
+    const validator = require("validator");
+
+    const userSchema = new mongoose.Schema(
+    	{
+    		firstName: // first name,
+    		lastName: // last name,
+    		emailId: {
+    			type: String,
+    			required: true,
+    			unique: true,
+    			lowercase: true,
+    			trim: true,
+                // emailId validate using validator library
+    			validate(value) {
+    				if (!validator.isEmail(value)) {
+    					throw new Error("Invalid Email address : " + value);
+    				}
+    			},
+    		},
+    		password: {
+    			type: String,
+    			required: true,
+                // password validate using validator library
+    			validate(value) {
+    				if (!validator.isStrongPassword(value)) {
+    					throw new Error("Enter a strong password : " + value);
+    				}
+    			},
+    		},
+    		age: // age,
+    		gender: // gender,
+    		about: // about
+    		skills: // skills
+    		photoUrl: {
+    			type: String,
+    			default: "https://geographyandyou.com/images/user-profile.png",
+                // photoUrl validate using validator library
+    			validate(value) {
+    				if (!validator.isURL(value)) {
+    					throw new Error("Invalid Photo URL : " + value);
+    				}
+    			},
+    		},
+    	},
+    	{
+    		timestamps: true,
+    	}
+    );
+
+    module.exports = mongoose.model("User", userSchema);
+    ```
