@@ -428,7 +428,7 @@ const userSchema = new mongoose.Schema({
 module.exports = mongoose.model("User", userSchema);
 ```
 
-### **create `POST` `/signup` API to add data to database**
+### **Create `POST` `/signup` API to add data to database**
 
 ```js
 const User = require("./models/user");
@@ -798,4 +798,95 @@ const userSchema = new mongoose.Schema(
 );
 
 module.exports = mongoose.model("User", userSchema);
+```
+
+### **Validate data in Signup API**
+
+```js
+const validator = require("validator");
+
+const validateSignupData = (req) => {
+	const { firstName, lastName, emailId, password } = req.body;
+	if (!firstName || !lastName) {
+		throw new Error("First name and last name are required");
+	} else if (!validator.isEmail(emailId)) {
+		throw new Error("Email address is not valid");
+	} else if (!validator.isStrongPassword(password)) {
+		throw new Error(
+			"Password must be at least 8 characters long, contain a combination of uppercase and lowercase letters, numbers, and special characters"
+		);
+	}
+};
+
+module.exports = { validateSignupData };
+```
+
+### **Install bcrypt package**
+
+-   Use command
+
+```bash
+npm install bcrypt
+```
+
+### **Create PasswordHash using `bcrypt.hash` & save the user is excrupted password**
+
+```js
+const bcrypt = require("bcrypt");
+const { validateSignupData } = require("./utlis/validate");
+
+app.post("/signup", async (req, res) => {
+	const { firstName, lastName, emailId, password } = req.body;
+	try {
+		// validate input data
+		validateSignupData(req);
+
+		// encrypt password
+		const hashedPassword = await bcrypt.hash(password, 10);
+
+		// create a new user (instance) of the User model
+		const user = new User({
+			firstName,
+			lastName,
+			emailId,
+			password: hashedPassword,
+		});
+		// save the user to the database
+		await user.save();
+		// return a success response
+		res.send("User created successfully");
+	} catch (err) {
+		// return an error response if the save operation fails
+		res.status(500).send("ERROR : " + err.message);
+	}
+});
+```
+
+### **Create `POST` `/login` API**
+
+```js
+// login dynamically
+app.post("/login", async (req, res) => {
+	const { emailId, password } = req.body;
+	try {
+		// validate input data
+		validateLoginData(req);
+
+		// find the user by emailId in the database
+		const user = await User.findOne({ emailId: emailId });
+		if (!user) {
+			throw new Error("Invalid credentials");
+		}
+		// compare password
+		const isValidPassword = await bcrypt.compare(password, user.password);
+		if (isValidPassword) {
+			res.send("User login successfully");
+		} else {
+			throw new Error("Invalid credentials");
+		}
+	} catch (err) {
+		// return an error response if the save operation fails
+		res.status(500).send("ERROR : " + err.message);
+	}
+});
 ```
