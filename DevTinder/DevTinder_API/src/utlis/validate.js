@@ -12,5 +12,13 @@ const validateSignupData = (req) => {
 		);
 	}
 };
+const validateLoginData = (req) => {
+	const { emailId, password } = req.body;
+	if (!validator.isEmail(emailId)) {
+		throw new Error("Email address is not valid");
+	} else if (!validator.isStrongPassword(password)) {
+		throw new Error("Passwords is not valid");
+	}
+};
 
-module.exports = { validateSignupData };
+module.exports = { validateSignupData, validateLoginData };
