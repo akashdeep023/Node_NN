@@ -6,6 +6,7 @@ const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const cookieParser = require("cookie-parser");
 const { validateSignupData, validateLoginData } = require("./utlis/validate");
+const { userAuth } = require("./middlewares/auth");
 
 // middleware to parse JSON request bodies
 app.use(express.json());
@@ -60,11 +61,14 @@ app.post("/login", async (req, res) => {
 			// create a jwt token
 			const token = await jwt.sign(
 				{ _id: user._id },
-				"DEV@Tinder_Secret"
+				"DEV@Tinder_Secret",
+				{ expiresIn: "7d" } // token expires after 7 days
 			);
 
 			// add the token to cookie and send the response back to the user
-			res.cookie("token", token);
+			res.cookie("token", token, {
+				expires: new Date(Date.now() + 7 * 24 * 3600000), // cookie expires after 7 days
+			});
 			res.send("User login successfully");
 		} else {
 			throw new Error("Invalid credentials");
@@ -74,29 +78,18 @@ app.post("/login", async (req, res) => {
 	}
 });
 
-app.get("/profile", async (req, res) => {
+app.get("/profile", userAuth, async (req, res) => {
 	try {
-		// get token from request cookies
-		const { token } = req.cookies; // cookie-parser middleware add
-
-		// check token is not existing
-		if (!token) {
-			throw new Error("Token is required");
-		}
-
-		// verify token and find the user
-		const decodedObj = await jwt.verify(token, "DEV@Tinder_Secret");
-		const { _id } = decodedObj;
-		const user = await User.findById(_id);
-
-		// check user is not existing
-		if (!user) {
-			throw new Error("Invalid token");
-		}
+		const user = req.user;
 		res.send(user);
 	} catch (err) {
 		res.status(500).send("ERROR : " + err.message);
 	}
+});
+
+app.post("/sendConnectionRequest", userAuth, (req, res) => {
+	const user = req.user;
+	res.send(user?.firstName + " sent to connection request.");
 });
 
 // get filter users in the database
