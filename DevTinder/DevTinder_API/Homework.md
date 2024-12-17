@@ -885,8 +885,213 @@ app.post("/login", async (req, res) => {
 			throw new Error("Invalid credentials");
 		}
 	} catch (err) {
-		// return an error response if the save operation fails
 		res.status(500).send("ERROR : " + err.message);
 	}
 });
+```
+
+### **Install cookie-parser**
+
+-   Use command
+
+```bash
+npm install cookie-parser
+```
+
+### **Create `GET` `/profile` APi and check if you get the cookie back**
+
+```js
+const cookieParser = require("cookie-parser");
+
+// middleware use to parse the cookie
+app.use(cookieParser());
+
+app.get("/profile", async (req, res) => {
+	try {
+		// get token from request cookies
+		const { token } = req.cookies; // cookie-parser middleware add
+		console.log(token);
+
+		res.send("Cookies reading");
+	} catch (err) {
+		res.status(500).send("ERROR : " + err.message);
+	}
+});
+```
+
+### **Install jsonwebtoken**
+
+-   Use command
+
+```bash
+npm install jsonwebtoken
+```
+
+### **IN Login API, after email and password validation, create e JWT token and send it to user in cookies**
+
+```js
+const jwt = require("jsonwebtoken");
+
+// login
+app.post("/login", async (req, res) => {
+	const { emailId, password } = req.body;
+	try {
+		// validate input data
+		validateLoginData(req);
+
+		// find the user by emailId in the database
+		const user = await User.findOne({ emailId: emailId });
+
+		// check user is not existing
+		if (!user) {
+			throw new Error("Invalid credentials");
+		}
+		// compare password
+		const isValidPassword = await bcrypt.compare(password, user.password); // true / false
+
+		// password is correct - true
+		if (isValidPassword) {
+			// create a jwt token
+			const token = await jwt.sign(
+				{ _id: user._id },
+				"DEV@Tinder_Secret"
+			);
+
+			// add the token to cookie and send the response back to the user
+			res.cookie("token", token);
+			res.send("User login successfully");
+		} else {
+			throw new Error("Invalid credentials");
+		}
+	} catch (err) {
+		res.status(500).send("ERROR : " + err.message);
+	}
+});
+```
+
+### **Read the cookies inside your `/profile` API and find the logged in user**
+
+```js
+app.get("/profile", async (req, res) => {
+	try {
+		// get token from request cookies
+		const { token } = req.cookies; // cookie-parser middleware add
+
+		// check token is not existing
+		if (!token) {
+			throw new Error("Token is required");
+		}
+
+		// verify token and find the user
+		const decodedObj = await jwt.verify(token, "DEV@Tinder_Secret");
+		const { _id } = decodedObj;
+		const user = await User.findById(_id);
+
+		// check user is not existing
+		if (!user) {
+			throw new Error("Invalid token");
+		}
+		res.send(user);
+	} catch (err) {
+		res.status(500).send("ERROR : " + err.message);
+	}
+});
+```
+
+### **userAuth Middleware**
+
+```js
+const jwt = require("jsonwebtoken");
+const User = require("../models/user");
+
+const userAuth = async (req, res, next) => {
+	try {
+		// get token from request cookies
+		const { token } = req.cookies; // cookie-parser middleware add
+
+		// check token is not existing
+		if (!token) {
+			throw new Error("Token is required");
+		}
+
+		// verify token and find the user
+		const decodedObj = await jwt.verify(token, "DEV@Tinder_Secret");
+		const { _id } = decodedObj;
+		const user = await User.findById(_id);
+
+		// check user is not existing
+		if (!user) {
+			throw new Error("Invalid token");
+		}
+		req.user = user;
+		next();
+	} catch (err) {
+		res.status(500).send("ERROR : " + err.message);
+	}
+};
+
+module.exports = { userAuth };
+```
+
+### **Add the userAuth middle ware in profile API and a new sendConnectionRequest API**
+
+-   `/profile` API
+
+```js
+app.get("/profile", userAuth, async (req, res) => {
+	try {
+		const user = req.user;
+		res.send(user);
+	} catch (err) {
+		res.status(500).send("ERROR : " + err.message);
+	}
+});
+```
+
+-   `/sendConnectionRequest` API
+
+```js
+app.post("/sendConnectionRequest", userAuth, (req, res) => {
+	const user = req.user;
+	res.send(user?.firstName + " sent to connection request.");
+});
+```
+
+### **Set the expiry of JWT token and cookies to 7 day**
+
+```js
+const token = await jwt.sign(
+	{ _id: user._id },
+	"DEV@Tinder_Secret",
+	{ expiresIn: "7d" } // token expires after 7 days
+);
+
+res.cookie("token", token, {
+	expires: new Date(Date.now() + 7 * 24 * 3600000), // cookie expires after 7 days
+});
+```
+
+### **Create userSchema method to `getJWT()`**
+
+```js
+userSchema.methods.getJWT = async function () {
+	const user = this; // this keyword represents to current user object
+	const token = jwt.sign({ _id: user._id }, "DEV@Tinder_Secret", {
+		expiresIn: "7d",
+	});
+	return token;
+};
+```
+
+### **Create userSchema method to `comparePassword(passwordInputByUser)`**
+
+```js
+userSchema.methods.comparePassword = async function (passwordInputByUser) {
+	const user = this;
+	const isValidPassword = await bcrypt.compare(
+		passwordInputByUser,
+		user.password // this.password
+	);
+	return isValidPassword;
+};
 ```
