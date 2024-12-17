@@ -3,10 +3,13 @@ const connectDB = require("./config/database");
 const User = require("./models/user");
 const app = express();
 const bcrypt = require("bcrypt");
+const jwt = require("jsonwebtoken");
+const cookieParser = require("cookie-parser");
 const { validateSignupData, validateLoginData } = require("./utlis/validate");
 
 // middleware to parse JSON request bodies
 app.use(express.json());
+app.use(cookieParser());
 
 // signup dynamically
 app.post("/signup", async (req, res) => {
@@ -44,18 +47,54 @@ app.post("/login", async (req, res) => {
 
 		// find the user by emailId in the database
 		const user = await User.findOne({ emailId: emailId });
+
+		// check user is not existing
 		if (!user) {
 			throw new Error("Invalid credentials");
 		}
 		// compare password
-		const isValidPassword = await bcrypt.compare(password, user.password);
+		const isValidPassword = await bcrypt.compare(password, user.password); // true / false
+
+		// password is correct - true
 		if (isValidPassword) {
+			// create a jwt token
+			const token = await jwt.sign(
+				{ _id: user._id },
+				"DEV@Tinder_Secret"
+			);
+
+			// add the token to cookie and send the response back to the user
+			res.cookie("token", token);
 			res.send("User login successfully");
 		} else {
 			throw new Error("Invalid credentials");
 		}
 	} catch (err) {
-		// return an error response if the save operation fails
+		res.status(500).send("ERROR : " + err.message);
+	}
+});
+
+app.get("/profile", async (req, res) => {
+	try {
+		// get token from request cookies
+		const { token } = req.cookies; // cookie-parser middleware add
+
+		// check token is not existing
+		if (!token) {
+			throw new Error("Token is required");
+		}
+
+		// verify token and find the user
+		const decodedObj = await jwt.verify(token, "DEV@Tinder_Secret");
+		const { _id } = decodedObj;
+		const user = await User.findById(_id);
+
+		// check user is not existing
+		if (!user) {
+			throw new Error("Invalid token");
+		}
+		res.send(user);
+	} catch (err) {
 		res.status(500).send("ERROR : " + err.message);
 	}
 });
