@@ -1095,3 +1095,174 @@ userSchema.methods.comparePassword = async function (passwordInputByUser) {
 	return isValidPassword;
 };
 ```
+
+### **Read documentation for express.Router**
+
+-   [Express Router](https://expressjs.com/en/api.html#router)
+
+### **Create routes folder for managing auth, profile, request routers**
+
+-   `routes/auth.js`
+-   `routes/profile.js`
+-   `routes/request.js`
+
+### **create authRouter, profileRouter, requestRouter**
+
+-   `authRouter`
+
+```js
+const express = require("express");
+const authRouter = express.Router();
+
+// signup
+authRouter.post("/signup", () => {
+	// do something
+});
+
+// login
+authRouter.post("/login", () => {
+	// do something
+});
+
+module.exports = authRouter;
+```
+
+-   `profileRouter`
+
+```js
+const express = require("express");
+const { userAuth } = require("../middlewares/auth");
+const profileRouter = express.Router();
+
+// profile
+profileRouter.post("/profile", userAuth, () => {
+	// do something
+});
+
+module.exports = profileRouter;
+```
+
+-   `requestRouter`
+
+```js
+const express = require("express");
+const { userAuth } = require("../middlewares/auth");
+const requestRouter = express.Router();
+
+// request
+requestRouter.post("/request", userAuth, () => {
+	// do something
+});
+
+module.exports = requestRouter;
+```
+
+### **Import these routers in app.js**
+
+```js
+// import router
+const authRouter = require("./routes/auth");
+const profileRouter = require("./routes/profile");
+const requestRouter = require("./routes/request");
+
+// use router middlewares
+app.use("/", authRouter);
+app.use("/", profileRouter);
+app.use("/", requestRouter);
+```
+
+### **Create POST `/logout` API**
+
+```js
+// logout
+authRouter.post("/logout", (req, res) => {
+	res.cookie("token", null, { expires: new Date(Date.now()) });
+	res.send("User logout successfully");
+});
+```
+
+### **Create PATCH `/profile/edit`**
+
+```js
+profileRouter.patch("/profile/edit", userAuth, async (req, res) => {
+	try {
+		// check fields is not valid
+		if (!validateEditProfileData(req)) {
+			throw new Error("Invalid profile field");
+		}
+		const loggedInUser = req.user;
+		// update each profile field
+		Object.keys(req.body).forEach(
+			(key) => (loggedInUser[key] = req.body[key])
+		);
+		// save the profile
+		await loggedInUser.save();
+		res.json({
+			message: `${loggedInUser.firstName}, your profile is updated successfuly!`,
+			data: loggedInUser,
+		});
+	} catch (err) {
+		res.status(500).send("ERROR : " + err.message);
+	}
+});
+```
+
+### **Create PATCH `/profile/password` API = forgot password API**
+
+```js
+// validate.js file
+const validatePasswordData = (req) => {
+	const { newPassword } = req.body;
+	if (!validator.isStrongPassword(newPassword)) {
+		throw new Error(
+			"Password must be at least 8 characters long, contain a combination of uppercase and lowercase letters, numbers, and special characters"
+		);
+	}
+};
+
+// routes/profile.js file
+const { validatePasswordData } = require("../utlis/validate");
+const bcrypt = require("bcrypt");
+
+profileRouter.patch("/profile/password", userAuth, async (req, res) => {
+	try {
+		const { password, newPassword } = req.body;
+		const user = req.user;
+		const isValidPassword = await user.comparePassword(password);
+		if (!isValidPassword) {
+			throw new Error("Invalid credentials");
+		}
+		validatePasswordData(req);
+		const hashedPassword = await bcrypt.hash(newPassword, 10);
+		user.password = hashedPassword;
+		await user.save();
+		res.json({ message: "Password Updated successfuly!" });
+	} catch (err) {
+		res.status(500).send("ERROR : " + err.message);
+	}
+});
+```
+
+### **Make you validate all data in PATCH api**
+
+```js
+const validateEditProfileData = (req) => {
+	const allowedEditFields = [
+		"firstName",
+		"lastName",
+		"emailId",
+		"age",
+		"gender",
+		"about",
+		"skills",
+		"photoUrl",
+	];
+	const isEditAllowed = Object.keys(req.body).every((field) =>
+		allowedEditFields.includes(field)
+	);
+	return isEditAllowed;
+};
+module.exports = {
+	validateEditProfileData,
+};
+```
