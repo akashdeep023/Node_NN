@@ -1198,7 +1198,7 @@ profileRouter.patch("/profile/edit", userAuth, async (req, res) => {
 		// save the profile
 		await loggedInUser.save();
 		res.json({
-			message: `${loggedInUser.firstName}, your profile is updated successfuly!`,
+			message: `${loggedInUser.firstName}, your profile is updated successfully!`,
 			data: loggedInUser,
 		});
 	} catch (err) {
@@ -1236,7 +1236,7 @@ profileRouter.patch("/profile/password", userAuth, async (req, res) => {
 		const hashedPassword = await bcrypt.hash(newPassword, 10);
 		user.password = hashedPassword;
 		await user.save();
-		res.json({ message: "Password Updated successfuly!" });
+		res.json({ message: "Password Updated successfully!" });
 	} catch (err) {
 		res.status(500).send("ERROR : " + err.message);
 	}
@@ -1266,3 +1266,165 @@ module.exports = {
 	validateEditProfileData,
 };
 ```
+
+### **Create Connnection Request Schema**
+
+```js
+const mongoose = require("mongoose");
+
+const connectionRequestSchema = mongoose.Schema(
+	{
+		fromUserId: {
+			type: mongoose.Schema.Types.ObjectId,
+			required: true,
+		},
+		toUserId: {
+			type: mongoose.Schema.Types.ObjectId,
+			required: true,
+		},
+		status: {
+			type: String,
+			required: true,
+			enum: {
+				values: ["ignored", "interested", "accepted", "rejected"],
+				message: `{VALUE} is incorrect status type`,
+			},
+		},
+	},
+	{
+		timestamps: true,
+	}
+);
+
+module.exports = mongoose.model("ConnectionRequest", connectionRequestSchema);
+```
+
+### **Send Connection Request API**
+
+```js
+requestRouter.post(
+	"/request/send/:status/:toUserId",
+	userAuth,
+	async (req, res) => {
+		try {
+			const fromUserId = req.user._id;
+			const toUserId = req.params.toUserId;
+			const status = req.params.status;
+
+			const allowedStatus = ["ignored", "interested"];
+			if (!allowedStatus.includes(status)) {
+				return res
+					.status(400)
+					.json({ message: "Invalid status type: " + status });
+			}
+
+			// check if user exists in the database
+			const toUser = await User.findById(toUserId);
+			if (!toUser) {
+				return res.status(404).json({ message: "User not found!" });
+			}
+
+			// check if connection request already exists between the two users
+			const existingConnectionRequest = await ConnectionRequest.findOne({
+				$or: [
+					{ fromUserId, toUserId }, // { fromUserId: fromUserId, toUserId: toUserId },
+					{ fromUserId: toUserId, toUserId: fromUserId },
+				],
+			});
+			if (existingConnectionRequest) {
+				return res
+					.status(400)
+					.send({ message: "Connection Request Already Exists!!" });
+			}
+
+			// create a new connection request and save it to the database
+			const connectionRequest = new ConnectionRequest({
+				fromUserId,
+				toUserId,
+				status,
+			});
+			const data = await connectionRequest.save();
+			res.json({
+				message: req.user.firstName + status + toUser.firstName,
+				data,
+			});
+		} catch (err) {
+			res.status(400).send("ERROR: " + err.message);
+		}
+	}
+);
+```
+
+### **Proper validation of Data**
+
+-   Validate all request `req object` data to send by user.
+
+### **Think about ALL corner cases**
+
+-   check status is valid or not
+-   check user exists in the database
+-   check connection request already exists between the two users
+
+### **$or query $and query in mongoose**
+
+-   [Mongoose Logical Operator](https://www.mongodb.com/docs/manual/reference/operator/query-logical/)
+
+### **schema.pre("save") function**
+
+```js
+// Pre hook to validate if fromUserId and toUserId are not the same.
+connectionRequestSchema.pre("save", function (next) {
+	const connectionRequest = this;
+	// Check if the fromUserId is same as toUserId
+	if (connectionRequest.fromUserId.equals(connectionRequest.toUserId)) {
+		throw new Error("Cannot send connection request to yourself!");
+	}
+	next();
+});
+```
+
+### **Read more about indexes in MongoDB**
+
+-   [Mongoose indexes](https://www.mongodb.com/docs/manual/core/indexes/)
+
+### **Why do we need index in DB?**
+
+-   Indexes contain all the necessary information needed to access items _quickly_ and _efficiently_. Indexes serve as lookup tables to efficiently store data for quicker retrieval.
+
+### **What is the Advantages and Disadvantages of Indexes in MongoDB?**
+
+**✅ Advantages:**
+
+1. **Faster Queries:** Quick retrieval of documents.
+2. **Efficient Sorting:** Optimized `sort()` operations.
+3. **Faster Updates:** Speedy updates on indexed fields.
+4. **Unique Constraints:** Prevent duplicate values.
+5. **Aggregation Optimization:** Faster `$group`, `$sort`.
+6. **Full-text Search:** Supports text search efficiently.
+7. **Geospatial Queries:** Optimized for location-based data.
+
+**❌ Disadvantages:**
+
+1. **Increased Disk Usage:** Indexes consume extra storage.
+2. **Slower Writes:** Inserts, updates, and deletes take longer.
+3. **Maintenance Overhead:** Indexes need to stay updated.
+4. **Complex Management:** Over-indexing hurts performance.
+5. **Index Bloat:** Unmanaged indexes grow inefficient.
+6. **Query Plan Overhead:** More indexes can confuse query optimization.
+
+### **Read this arcticle about compond indexes in MongoDB and How to use.**
+
+-   [Mongoose indexes](https://www.mongodb.com/docs/manual/core/indexes/index-types/index-compound/)
+
+```js
+// Index on fromUserId and toUserId to optimize queries.
+connectionRequestSchema.index({ fromUserId: 1, toUserId: 1 });
+```
+
+### **ALWAYS THINK ABOUT CORNER CASES**
+
+-   **Security:** Prevent SQL/NoSQL injection, XSS attacks, and sensitive data exposure.
+-   **Authentication & Authorization:** Handle expired tokens, permission checks, and unauthenticated access.
+-   **Input Validation:** Validate required fields, data types, boundary values, and payload sizes.
+-   **Error Handling:** Use proper HTTP status codes, meaningful error messages, and a consistent error format.
+-   **Performance:** Optimize queries, set timeouts, limit payload sizes, and use caching efficiently.
