@@ -30,7 +30,7 @@ profileRouter.patch("/profile/edit", userAuth, async (req, res) => {
 		// save the profile
 		await loggedInUser.save();
 		res.json({
-			message: `${loggedInUser.firstName}, your profile is updated successfuly!`,
+			message: `${loggedInUser.firstName}, your profile is updated successfully!`,
 			data: loggedInUser,
 		});
 	} catch (err) {
@@ -50,7 +50,7 @@ profileRouter.patch("/profile/password", userAuth, async (req, res) => {
 		const hashedPassword = await bcrypt.hash(newPassword, 10);
 		user.password = hashedPassword;
 		await user.save();
-		res.json({ message: "Password Updated successfuly!" });
+		res.json({ message: "Password Updated successfully!" });
 	} catch (err) {
 		res.status(500).send("ERROR : " + err.message);
 	}
