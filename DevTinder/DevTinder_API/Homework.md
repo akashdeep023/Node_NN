@@ -1428,3 +1428,43 @@ connectionRequestSchema.index({ fromUserId: 1, toUserId: 1 });
 -   **Input Validation:** Validate required fields, data types, boundary values, and payload sizes.
 -   **Error Handling:** Use proper HTTP status codes, meaningful error messages, and a consistent error format.
 -   **Performance:** Optimize queries, set timeouts, limit payload sizes, and use caching efficiently.
+
+### **Write code with proper validations for POST /request/review/:status/:requestId**
+
+```js
+requestRouter.post(
+	"/request/review/:status/:requestId",
+	userAuth,
+	async (req, res) => {
+		try {
+			const loggedInUser = req.user;
+			const { status, requestId } = req.params;
+			const allowedStatus = ["accepted", "rejected"];
+
+			if (!allowedStatus.includes(status)) {
+				return res
+					.status(400)
+					.json({ message: "Invalid status type: " + status });
+			}
+			const connectionRequest = await ConnectionRequest.findOne({
+				_id: requestId,
+				toUserId: loggedInUser._id,
+				status: "interested",
+			});
+			if (!connectionRequest) {
+				return res
+					.status(400)
+					.json({ message: "Invalid connection request" });
+			}
+			connectionRequest.status = status;
+			const data = await connectionRequest.save();
+			res.json({
+				message: "Connection request " + status,
+				data,
+			});
+		} catch (err) {
+			res.status(400).send("ERROR: " + err.message);
+		}
+	}
+);
+```
