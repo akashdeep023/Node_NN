@@ -47,7 +47,8 @@ requestRouter.post(
 			});
 			const data = await connectionRequest.save();
 			res.json({
-				message: req.user.firstName + status + toUser.firstName,
+				message:
+					req.user.firstName + " " + status + " " + toUser.firstName,
 				data,
 			});
 		} catch (err) {
